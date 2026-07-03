@@ -39,6 +39,11 @@
       display: block;
     }
 
+    #table-container {
+      max-height: 400px;
+      overflow-y: auto;
+      border: 1px solid #ddd;
+    }
     table {
       width: 100%;
       border-collapse: collapse;
@@ -54,6 +59,8 @@
       background: #f5f5f5;
       user-select: none;
       white-space: nowrap;
+      position: sticky;
+      top: 0;
     }
     th:hover {
       background: #eaeaea;
@@ -63,6 +70,10 @@
     }
     tbody tr:hover {
       background: #e9f2ff;
+    }
+    tbody tr.selected {
+      background: #fff3b0;
+      font-weight: bold;
     }
 
     #log {
@@ -85,19 +96,21 @@
   </div>
   <span id="count"></span>
 
-  <table id="rebar-table">
-    <thead>
-      <tr>
-        <th data-key="postnr">Postnr</th>
-        <th data-key="count">Antall</th>
-        <th data-key="diameter">Diameter</th>
-        <th data-key="lengde">Lengde</th>
-        <th data-key="formkode">Formkode</th>
-        <th data-key="segment">Segment</th>
-      </tr>
-    </thead>
-    <tbody></tbody>
-  </table>
+  <div id="table-container">
+    <table id="rebar-table">
+      <thead>
+        <tr>
+          <th data-key="postnr">Postnr</th>
+          <th data-key="count">Antall</th>
+          <th data-key="diameter">Diameter</th>
+          <th data-key="lengde">Lengde</th>
+          <th data-key="formkode">Formkode</th>
+          <th data-key="segment">Segment</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
 
   <div id="log"></div>
 

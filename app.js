@@ -8,6 +8,7 @@ let API = null;
 let rows = []; // grouped rebar rows currently shown
 let sortKey = "postnr";
 let sortDir = 1;
+let selectedKey = null; // postnr of the row currently highlighted from a viewer selection
 
 const REBAR_CLASSES = ["IfcReinforcingBar", "IfcReinforcingMesh"];
 const REBAR_COMMON_TYPES = ["REINFORCINGBAR", "REINFORCINGMESH"];
@@ -105,6 +106,7 @@ async function fetchRebarList() {
     }
 
     rows = Array.from(groups.values());
+    selectedKey = null;
     sortRows();
     renderTable();
 
@@ -140,6 +142,7 @@ function renderTable() {
   tableBody.innerHTML = "";
   for (const row of rows) {
     const tr = document.createElement("tr");
+    if (row.postnr === selectedKey) tr.className = "selected";
     tr.innerHTML = `
       <td>${row.postnr}</td>
       <td>${row.count}</td>
@@ -151,6 +154,39 @@ function renderTable() {
     tr.addEventListener("click", () => selectAndZoom(row));
     tableBody.appendChild(tr);
   }
+}
+
+/** Handles a selection made directly in the 3D Viewer: highlights the matching
+ *  row and brings it to the top of the list, mirroring BuildingPoint's Rebar Label. */
+function handleViewerSelection(selection) {
+  if (!selection || selection.length === 0) {
+    selectedKey = null;
+    renderTable();
+    return;
+  }
+
+  const picked = new Set();
+  for (const item of selection) {
+    for (const runtimeId of item.objectRuntimeIds || []) {
+      picked.add(`${item.modelId}|${runtimeId}`);
+    }
+  }
+
+  const matchIndex = rows.findIndex((row) =>
+    row.entries.some((e) => picked.has(`${e.modelId}|${e.runtimeId}`))
+  );
+
+  if (matchIndex === -1) {
+    log("Valgt element i 3D-viewer er ikke i gjeldende liste (trykk Oppdater liste?).");
+    return;
+  }
+
+  const [matchedRow] = rows.splice(matchIndex, 1);
+  rows.unshift(matchedRow);
+  selectedKey = matchedRow.postnr;
+  renderTable();
+  document.getElementById("table-container").scrollTop = 0;
+  log(`Postnr ${matchedRow.postnr} valgt i 3D-viewer.`);
 }
 
 async function selectAndZoom(row) {
@@ -169,6 +205,8 @@ async function selectAndZoom(row) {
   try {
     await API.viewer.setSelection(selector, "set");
     await API.viewer.setCamera(selector);
+    selectedKey = row.postnr;
+    renderTable();
     log(`Valgt og zoomet til postnr ${row.postnr} (${row.count} stk).`);
   } catch (err) {
     log("Feil ved valg/zoom: " + err.message);
@@ -196,7 +234,9 @@ async function main() {
     API = await TrimbleConnectWorkspace.connect(
       window.parent,
       (event, args) => {
-        // Events are logged only for debugging; not otherwise handled yet.
+        if (event === "viewer.onSelectionChanged" && !(args.origin && args.origin.isSelf)) {
+          handleViewerSelection(args.data);
+        }
       },
       30000
     );
