@@ -1,0 +1,7 @@
+{
+  "title": "Rebar Postliste",
+  "description": "Liste over synlig armering i 3D Viewer med klikk-for-å-velge og zoom.",
+  "url": "https://REPLACE-WITH-YOUR-HOSTING-URL/index.html",
+  "icon": "https://REPLACE-WITH-YOUR-HOSTING-URL/icon.png",
+  "enabled": true
+}

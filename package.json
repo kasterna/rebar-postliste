@@ -1,0 +1,19 @@
+{
+  "name": "trimble-connect",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "trimble-connect-workspace-api": "^0.3.34"
+  },
+  "devDependencies": {
+    "http-server": "^14.1.1"
+  }
+}
