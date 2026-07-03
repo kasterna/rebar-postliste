@@ -2,7 +2,8 @@
 <html lang="no">
 <head>
   <meta charset="UTF-8" />
-  <title>Rebar Postliste</title>
+  <title>Søk Armering</title>
+  <link rel="icon" type="image/svg+xml" href="icon.svg" />
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -10,6 +11,19 @@
       padding: 10px;
       font-size: 13px;
       color: #222;
+    }
+    #page-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin: 0 0 10px 0;
+      font-size: 18px;
+      font-weight: bold;
+      color: #1e63b8;
+    }
+    #page-title img {
+      width: 26px;
+      height: 26px;
     }
     #status {
       padding: 6px 8px;
@@ -91,6 +105,7 @@
   </style>
 </head>
 <body>
+  <div id="page-title"><img src="icon.svg" alt="" /> Søk Armering</div>
   <div id="toolbar">
     <div id="status">Kobler til Trimble Connect...</div>
     <button id="refresh-btn" disabled>Oppdater liste</button>

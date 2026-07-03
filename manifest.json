@@ -1,6 +1,7 @@
 {
-  "title": "Rebar Postliste",
+  "title": "Søk Armering",
   "description": "Liste over synlig armering i 3D Viewer med klikk-for-å-velge og zoom.",
   "url": "https://kasterna.github.io/rebar-postliste/index.html",
+  "icon": "https://kasterna.github.io/rebar-postliste/icon.svg",
   "enabled": true
 }
