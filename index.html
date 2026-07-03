@@ -7,69 +7,101 @@
     body {
       font-family: Arial, sans-serif;
       margin: 0;
-      padding: 12px;
+      padding: 10px;
       font-size: 13px;
       color: #222;
     }
     #status {
-      padding: 8px;
+      padding: 6px 8px;
       border-radius: 4px;
-      margin-bottom: 12px;
+      margin-bottom: 8px;
       background: #eee;
+      display: inline-block;
     }
     #status.ok { background: #d4edda; color: #155724; }
     #status.error { background: #f8d7da; color: #721c24; }
+    #status.busy { background: #fff3cd; color: #856404; }
+
+    #toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+    #refresh-btn {
+      padding: 6px 12px;
+      cursor: pointer;
+    }
+    #count {
+      font-size: 12px;
+      color: #555;
+      margin-bottom: 8px;
+      display: block;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+    }
+    th, td {
+      border-bottom: 1px solid #ddd;
+      padding: 4px 6px;
+      text-align: left;
+    }
+    th {
+      cursor: pointer;
+      background: #f5f5f5;
+      user-select: none;
+      white-space: nowrap;
+    }
+    th:hover {
+      background: #eaeaea;
+    }
+    tbody tr {
+      cursor: pointer;
+    }
+    tbody tr:hover {
+      background: #e9f2ff;
+    }
+
     #log {
       white-space: pre-wrap;
       font-family: Consolas, monospace;
-      font-size: 12px;
+      font-size: 11px;
       background: #f5f5f5;
-      padding: 8px;
+      padding: 6px;
       border-radius: 4px;
-      max-height: 300px;
+      max-height: 120px;
       overflow-y: auto;
+      margin-top: 10px;
     }
   </style>
 </head>
 <body>
-  <div id="status">Kobler til Trimble Connect...</div>
+  <div id="toolbar">
+    <div id="status">Kobler til Trimble Connect...</div>
+    <button id="refresh-btn" disabled>Oppdater liste</button>
+  </div>
+  <span id="count"></span>
+
+  <table id="rebar-table">
+    <thead>
+      <tr>
+        <th data-key="postnr">Postnr</th>
+        <th data-key="count">Antall</th>
+        <th data-key="diameter">Diameter</th>
+        <th data-key="lengde">Lengde</th>
+        <th data-key="formkode">Formkode</th>
+        <th data-key="segment">Segment</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
   <div id="log"></div>
 
   <script src="vendor/trimbleconnect.workspace.api.js"></script>
-  <script>
-    const statusEl = document.getElementById("status");
-    const logEl = document.getElementById("log");
-
-    function log(msg) {
-      const time = new Date().toLocaleTimeString();
-      logEl.textContent += `[${time}] ${msg}\n`;
-    }
-
-    function setStatus(text, cls) {
-      statusEl.textContent = text;
-      statusEl.className = cls || "";
-    }
-
-    async function main() {
-      try {
-        const API = await TrimbleConnectWorkspace.connect(
-          window.parent,
-          (event, args) => {
-            log(`Event mottatt: ${event} ${JSON.stringify(args)}`);
-          },
-          30000
-        );
-
-        window.API = API; // for enkel feilsøking i devtools
-        setStatus("Tilkoblet Trimble Connect ✔", "ok");
-        log("WorkspaceAPI.connect() lyktes.");
-      } catch (err) {
-        setStatus("Kunne ikke koble til Trimble Connect ✘", "error");
-        log("Feil: " + err.message);
-      }
-    }
-
-    main();
-  </script>
+  <script src="app.js"></script>
 </body>
 </html>
