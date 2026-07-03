@@ -156,9 +156,24 @@ function renderTable() {
   }
 }
 
-/** Handles a selection made directly in the 3D Viewer: highlights the matching
- *  row and brings it to the top of the list, mirroring BuildingPoint's Rebar Label. */
-function handleViewerSelection(selection) {
+function buildSelector(entries) {
+  const byModel = new Map();
+  for (const entry of entries) {
+    if (!byModel.has(entry.modelId)) byModel.set(entry.modelId, []);
+    byModel.get(entry.modelId).push(entry.runtimeId);
+  }
+  return {
+    modelObjectIds: Array.from(byModel.entries()).map(([modelId, objectRuntimeIds]) => ({
+      modelId,
+      objectRuntimeIds,
+    })),
+  };
+}
+
+/** Handles a selection made directly in the 3D Viewer: expands the selection to
+ *  every bar sharing the same postnr, highlights the matching row, and brings
+ *  it to the top of the list, mirroring BuildingPoint's Rebar Label. */
+async function handleViewerSelection(selection) {
   if (!selection || selection.length === 0) {
     selectedKey = null;
     renderTable();
@@ -186,21 +201,20 @@ function handleViewerSelection(selection) {
   selectedKey = matchedRow.postnr;
   renderTable();
   document.getElementById("table-container").scrollTop = 0;
-  log(`Postnr ${matchedRow.postnr} valgt i 3D-viewer.`);
+  log(`Postnr ${matchedRow.postnr} valgt i 3D-viewer (${matchedRow.count} stk, utvider valg).`);
+
+  // Only expand the selection if it isn't already the full group (avoids redundant calls/events).
+  if (matchedRow.entries.length > selection.reduce((n, s) => n + (s.objectRuntimeIds || []).length, 0)) {
+    try {
+      await API.viewer.setSelection(buildSelector(matchedRow.entries), "set");
+    } catch (err) {
+      log("Feil ved utvidelse av valg: " + err.message);
+    }
+  }
 }
 
 async function selectAndZoom(row) {
-  const byModel = new Map();
-  for (const entry of row.entries) {
-    if (!byModel.has(entry.modelId)) byModel.set(entry.modelId, []);
-    byModel.get(entry.modelId).push(entry.runtimeId);
-  }
-  const selector = {
-    modelObjectIds: Array.from(byModel.entries()).map(([modelId, objectRuntimeIds]) => ({
-      modelId,
-      objectRuntimeIds,
-    })),
-  };
+  const selector = buildSelector(row.entries);
 
   try {
     await API.viewer.setSelection(selector, "set");
