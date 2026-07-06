@@ -148,6 +148,15 @@ function sortRows() {
   });
 }
 
+/** Lengde kommer i mm og har for RIB-modeller mange desimaler (f.eks.
+ *  2647.1150383789704) som ikke er meningsfulle for armeringslengde — rund av til
+ *  nærmeste hele mm for visning. */
+function formatLengde(value) {
+  if (value === undefined || value === null || value === "") return "";
+  const n = Number(value);
+  return isNaN(n) ? value : Math.round(n);
+}
+
 function renderTable() {
   tableBody.innerHTML = "";
   for (const row of rows) {
@@ -157,7 +166,7 @@ function renderTable() {
       <td>${row.postnr}</td>
       <td>${row.count}</td>
       <td>${row.diameter ?? ""}</td>
-      <td>${row.lengde ?? ""}</td>
+      <td>${formatLengde(row.lengde)}</td>
       <td>${row.formkode ?? ""}</td>
       <td>${row.segment ?? ""}</td>
     `;
