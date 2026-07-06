@@ -18,19 +18,19 @@ Inspirert av "Rebar Label" fra BuildingPoint Scandinavia.
 
 Extensionen kobler seg til Trimble Connect via [`trimble-connect-workspace-api`](https://www.npmjs.com/package/trimble-connect-workspace-api) og bruker `viewer.getObjects` + `viewer.getObjectProperties` til å hente egenskaper for synlige objekter.
 
-Den er testet mot IFC-modeller eksportert fra Tekla, og forventer disse property-navnene i property-settet for armering:
+Testet mot IFC-modeller eksportert fra Tekla **og** fra et RIB-basert verktøy (bekreftet mot en ekte Kolbotn-modell). `findProperty()` i [app.js](app.js) tar imot en liste med kandidat-navn per felt og bruker det første som finnes, slik at begge konvensjonene virker samtidig i samme delte kodebase:
 
-| Kolonne i lista | Property-navn i modellen |
-|---|---|
-| Postnr | `Posisjonsnummer` |
-| Diameter | `Diameter jern` |
-| Lengde | `Armeringslengde` |
-| Formkode | `Formkode` |
-| Segment | `Segment` |
+| Kolonne i lista | Tekla | RIB |
+|---|---|---|
+| Postnr | `Posisjonsnummer` | `ARM.07 - Posnr` |
+| Diameter | `Diameter jern` | `ARM.08 - Stangdiameter` |
+| Lengde | `Armeringslengde` | `ARM.80 - Kapplengde` (per-stang lengde — **ikke** `ARM.81 - Totallengde`, som er summen for hele gruppen) |
+| Formkode | `Formkode` | `ARM.37 - Formkode` |
+| Segment | `Segment` | (finnes ikke i RIB-modeller — vises tomt) |
 
-Elementer identifiseres som armering enten via IFC-klassen (`IfcReinforcingBar`/`IfcReinforcingMesh`) eller feltet `Common Type` (`REINFORCINGBAR`/`REINFORCINGMESH`).
+Elementer identifiseres som armering enten via IFC-klassen (`IfcReinforcingBar`/`IfcReinforcingMesh`) eller feltet `Common Type` (`REINFORCINGBAR`/`REINFORCINGMESH`) — samme for begge konvensjoner.
 
-**Bruker du en modell fra et annet program enn Tekla, eller andre property-navn?** Sjekk property-panelet i Trimble Connect på et armeringselement, og oppdater konstantene/oppslagene i [app.js](app.js) (funksjonen `findProperty` og `REBAR_CLASSES`/`REBAR_COMMON_TYPES`).
+**Bruker du en modell fra et annet program, eller andre property-navn enn de over?** Sjekk property-panelet i Trimble Connect på et armeringselement (evt. hent de rå navnene via `API.viewer.getObjectProperties()` i konsollen, siden Trimble Connect sin visning ikke alltid er 1:1 med det rå navnet), og legg til det nye navnet i kandidat-lista for feltet i [app.js](app.js) (funksjonen `findProperty`-kallene i `fetchRebarList`, samt `REBAR_CLASSES`/`REBAR_COMMON_TYPES` om selve klassifiseringen også trenger utvidelse).
 
 ## Legge til i et Trimble Connect-prosjekt
 

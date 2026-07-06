@@ -32,7 +32,11 @@ Everything lives in two files:
 
 ### Coupling to model authoring conventions
 
-The property names read in `findProperty()` calls (`"Posisjonsnummer"`, `"Diameter jern"`, `"Armeringslengde"`, `"Formkode"`, `"Segment"`) and the `REBAR_CLASSES`/`REBAR_COMMON_TYPES` constants are matched against a specific Tekla IFC export convention (see README's property table). This is shared code — one repo, one deployed URL, used by every Trimble Connect project that adds the extension via manifest.json. Changing these mappings affects all of them, not just one project's models.
+`findProperty(propertySets, names)` accepts either a single property name or an array of candidate names, tried in order (see README's property table for the current Tekla ↔ RIB mapping) — this was added 2026-07 after adding the extension to the real Kolbotn project surfaced a RIB-exported model where every element landed in "(mangler postnr)" despite being correctly detected as rebar, because RIB uses `"ARM.07 - Posnr"`-style names instead of Tekla's `"Posisjonsnummer"`. The `REBAR_CLASSES`/`REBAR_COMMON_TYPES` constants didn't need equivalent per-convention lists — IFC class detection worked unchanged across both.
+
+This is shared code — one repo, one deployed URL, used by every Trimble Connect project that adds the extension via manifest.json. Adding a new export convention's candidate names is additive and safe (existing conventions keep matching), but changing an *existing* candidate name's value affects every project relying on it, not just one model.
+
+**How the RIB names were confirmed, not guessed:** Trimble Connect's own property panel display isn't guaranteed to be the literal raw property name. To get ground truth, the actual `ARM.XX - ...` names were read via the browser console, in the extension's own iframe (not the Trimble Connect host page, which has unrelated noise) — `API.viewer.getSelection()` → `API.viewer.getObjectProperties(modelId, [runtimeId])` → `console.log(JSON.stringify(props[0].properties, null, 2))` — against a real selected element in the live Kolbotn project. Same technique to use if another project surfaces yet another naming convention.
 
 ## Deployment / testing loop
 

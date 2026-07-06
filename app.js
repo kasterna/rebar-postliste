@@ -24,19 +24,29 @@ function setStatus(text, cls) {
   statusEl.className = cls || "";
 }
 
-function findProperty(propertySets, name) {
+/** `names` can be a single property name or an array of candidate names to try in
+ *  order — needed because different export tools use completely different naming
+ *  conventions for the same field (e.g. Tekla's "Posisjonsnummer" vs a RIB/Revit
+ *  export's "ARM.07 - Posnr"). First match wins, checked across all Psets since the
+ *  same field can land in different Psets depending on the model/export. */
+function findProperty(propertySets, names) {
   if (!propertySets) return undefined;
-  for (const pset of propertySets) {
-    if (!pset.properties) continue;
-    for (const prop of pset.properties) {
-      if (prop.name === name) return prop.value;
+  const nameList = Array.isArray(names) ? names : [names];
+  for (const name of nameList) {
+    for (const pset of propertySets) {
+      if (!pset.properties) continue;
+      for (const prop of pset.properties) {
+        if (prop.name === name) return prop.value;
+      }
     }
   }
   // fallback: case-insensitive match
-  for (const pset of propertySets) {
-    if (!pset.properties) continue;
-    for (const prop of pset.properties) {
-      if (prop.name && prop.name.toLowerCase() === name.toLowerCase()) return prop.value;
+  for (const name of nameList) {
+    for (const pset of propertySets) {
+      if (!pset.properties) continue;
+      for (const prop of pset.properties) {
+        if (prop.name && prop.name.toLowerCase() === name.toLowerCase()) return prop.value;
+      }
     }
   }
   return undefined;
@@ -79,10 +89,10 @@ async function fetchRebarList() {
         if (!isRebar(obj)) continue;
         rebarCount++;
 
-        const postnr = findProperty(obj.properties, "Posisjonsnummer");
-        const diameter = findProperty(obj.properties, "Diameter jern");
-        const lengde = findProperty(obj.properties, "Armeringslengde");
-        const formkode = findProperty(obj.properties, "Formkode");
+        const postnr = findProperty(obj.properties, ["Posisjonsnummer", "ARM.07 - Posnr"]);
+        const diameter = findProperty(obj.properties, ["Diameter jern", "ARM.08 - Stangdiameter"]);
+        const lengde = findProperty(obj.properties, ["Armeringslengde", "ARM.80 - Kapplengde"]);
+        const formkode = findProperty(obj.properties, ["Formkode", "ARM.37 - Formkode"]);
         const segment = findProperty(obj.properties, "Segment");
 
         const key = postnr !== undefined ? String(postnr) : "(mangler postnr)";
@@ -112,7 +122,7 @@ async function fetchRebarList() {
 
     countEl.textContent = `${rebarCount} armeringselementer (${rows.length} unike postnr) av ${totalVisible} synlige objekter totalt.`;
     if (missingPostnr > 0) {
-      countEl.textContent += ` OBS: ${missingPostnr} elementer manglet "Posisjonsnummer".`;
+      countEl.textContent += ` OBS: ${missingPostnr} elementer manglet postnr-egenskapen.`;
     }
 
     setStatus("Tilkoblet Trimble Connect ✔", "ok");
